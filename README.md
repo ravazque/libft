@@ -1,9 +1,8 @@
-<p align="center">
 
 # Libft
 
-![Libft](https://raw.githubusercontent.com/ayogun/42-project-badges/main/badges/libfte.png)
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ayogun/42-project-badges/main/badges/libftm.png" alt="libftm badge">
 </p>
 
 ## 📖 About
@@ -125,7 +124,10 @@ make fclean
 make re
 ```
 
+<br>
+
 </details>
+
 <summary><strong>📁 Project Structure</strong></summary>
 
 <br>
@@ -137,6 +139,8 @@ libft/
 ├── ft_*.c               # Source files for each function
 └── README.md            # Project documentation
 ```
+
+<br>
 
 </details>
 
@@ -164,6 +168,8 @@ The library has been thoroughly tested with:
 - **Memory Management**: Manual memory management with malloc/free
 - **Library Type**: Static library (.a file)
 - **Dependencies**: None (standard C library functions only for basic operations)
+
+---
 
 > [!NOTE]
 > This library serves as the foundation for all subsequent 42 projects and demonstrates proficiency in low-level C programming concepts.
