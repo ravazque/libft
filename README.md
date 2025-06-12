@@ -97,7 +97,7 @@ The project is divided into three main parts:
 ## 🚀 Installation & Structure
 
 <details>
-<summary><strong>Download & Compilation 📥</strong></summary>
+<summary><strong>📥 Download & Compilation</strong></summary>
     
 <br>
 
@@ -133,7 +133,7 @@ make re
 
 ```
 libft/
-├── Makefile              # Compilation rules
+├── Makefile             # Compilation rules
 ├── libft.h              # Header file with function prototypes
 ├── ft_*.c               # Source files for each function
 └── README.md            # Project documentation
