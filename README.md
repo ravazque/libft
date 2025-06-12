@@ -152,13 +152,6 @@ libft/
 - **Makefile**: Understanding compilation process and library creation
 - **Code Organization**: Structuring code for reusability and maintainability
 
-## 🧪 Testing
-
-The library has been thoroughly tested with:
-- Custom test cases for edge cases and normal operations
-- Memory leak testing with valgrind
-- Comparison with original libc functions
-- Stress testing with large inputs
 
 ## 🔧 Technical Specifications
 
