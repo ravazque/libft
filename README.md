@@ -1,6 +1,4 @@
 
-# Libft
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/ayogun/42-project-badges/main/badges/libftm.png" alt="libftm badge">
 </p>
@@ -128,6 +126,7 @@ make re
 
 </details>
 
+<details>
 <summary><strong>📁 Project Structure</strong></summary>
 
 <br>
