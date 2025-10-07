@@ -1,300 +1,190 @@
-# 📚 README - ft_strlcat
+# ft_strlcat - Guía de Funcionamiento
 
-## 🎯 Propósito de la Función
-
-`ft_strlcat` es una función que concatena (une) dos strings de forma **segura**, evitando desbordamientos de buffer. Es una reimplementación de la función `strlcat` de BSD.
-
----
-
-## 📋 Prototipo
+## Prototipo
 
 ```c
 size_t ft_strlcat(char *dst, const char *src, size_t dstsize)
 ```
 
-### Parámetros:
-- **dst**: String destino donde se concatenará src
-- **src**: String fuente que se añadirá a dst
-- **dstsize**: Tamaño total del buffer dst (NO el espacio disponible)
+## Qué hace la función
 
-### Retorno:
-- La longitud total que **intentó** crear (longitud de dst + longitud de src)
+Concatena src al final de dst sin sobrepasar el tamaño dstsize, asegurando que dst siempre termine en '\0'.
 
----
+El valor de retorno es SIEMPRE `strlen(dst_inicial) + strlen(src)`, independientemente de cuánto haya copiado realmente.
 
-## 🔑 Concepto Clave: ¿Por qué no devuelve lo que hace?
+## La comprobación inicial
 
-### Esta es la parte más confusa pero más importante:
-
-**Lo que HACE la función:**
-- Concatena src al final de dst (copia caracteres)
-- Se asegura de que dst termine con '\0'
-- NO sobrepasa el límite de dstsize
-
-**Lo que DEVUELVE la función:**
-- La longitud TOTAL que hubiera tenido el string si hubiera espacio suficiente
-- Es decir: `strlen(dst_inicial) + strlen(src)`
-
-### ¿Por qué esta diferencia?
-
-Esto permite **detectar truncamiento**:
-```c
-size_t resultado = ft_strlcat(dst, src, size);
-
-if (resultado >= size) {
-    // ¡ALERTA! El string fue truncado
-    // No cupo todo src en dst
-}
-```
-
----
-
-## 🔍 Análisis Paso a Paso
-
-### Paso 1: Calcular longitudes
-```c
-lngdst = ft_strlen(dst);  // Longitud actual de dst
-lngsrc = ft_strlen(src);  // Longitud de src
-i = 0;                     // Índice para recorrer src
-```
-
-### Paso 2: Caso especial - Buffer demasiado pequeño
 ```c
 if (lngdst >= dstsize)
     return (dstsize + lngsrc);
 ```
 
-**¿Qué significa esto?**
-- Si dst ya es igual o mayor que dstsize, el buffer está mal configurado o ya lleno
-- Retorna `dstsize + lngsrc` como si dst tuviera longitud dstsize
-- **NO COPIA NADA** en este caso
+### Por qué existe esta comprobación
 
-**Ejemplo:**
+Esta comprobación detecta dos situaciones problemáticas:
+
+**Situación 1: Buffer mal dimensionado**
+```c
+char dst[10] = "Hola mundo completo";  // 19 caracteres en un buffer de 10
+ft_strlcat(dst, "extra", 10);
 ```
-dst = "Hola mundo completo" (19 chars)
-dstsize = 10
-src = "extra"
+Aquí `lngdst = 19` pero `dstsize = 10`. Esto es imposible: el string no puede ser más largo que su propio buffer. La función detecta que algo está mal.
 
-lngdst (19) >= dstsize (10) → Retorna 10 + 5 = 15
+**Situación 2: Buffer completamente lleno**
+```c
+char dst[10] = "123456789";  // 9 caracteres + '\0' = 10 bytes (buffer lleno)
+ft_strlcat(dst, "extra", 10);
+```
+Aquí `lngdst = 9` y `dstsize = 10`. No hay espacio para añadir nada porque el único byte libre es el que ocupa el '\0' final.
+
+### Por qué retorna dstsize + lngsrc
+
+Cuando `lngdst >= dstsize`, la función no puede saber cuál es la longitud real de dst (puede estar corrupto o mal medido). Por eso asume que dst tiene longitud `dstsize` y retorna como si intentara concatenar a partir de ahí:
+
+```
+Retorno = dstsize + lngsrc
 ```
 
-### Paso 3: Copiar caracteres de src a dst
+Esto permite al llamador detectar que algo falló comparando el retorno con dstsize.
+
+## Cómo concatena
+
 ```c
 while (src[i] != '\0' && (lngdst + i) < (dstsize - 1))
 {
     dst[lngdst + i] = src[i];
     i++;
 }
-```
-
-**Condiciones del while:**
-1. `src[i] != '\0'` → No hemos llegado al final de src
-2. `(lngdst + i) < (dstsize - 1)` → Hay espacio para este char + '\0'
-
-**¿Por qué `dstsize - 1`?**
-- Necesitamos reservar un espacio para el '\0' final
-- Si dstsize = 10, solo podemos escribir hasta la posición 8 (índice 9 es para '\0')
-
-**Visualización:**
-```
-dst antes:  "Hola\0?????"  (dstsize = 10)
-            [0][1][2][3][4][5][6][7][8][9]
-lngdst = 4
-
-Copiando " mundo":
-- i=0: dst[4] = ' '  → "Hola \0????"
-- i=1: dst[5] = 'm'  → "Hola m\0???"
-- i=2: dst[6] = 'u'  → "Hola mu\0??"
-- i=3: dst[7] = 'n'  → "Hola mun\0?"
-- i=4: dst[8] = 'd'  → "Hola mund\0"
-- i=5: STOP (lngdst + i = 9, que NO es < 9)
-```
-
-### Paso 4: Añadir el terminador nulo
-```c
 dst[lngdst + i] = '\0';
 ```
 
-Garantiza que dst siempre sea un string válido terminado en '\0'.
+### La condición del while explicada
 
-### Paso 5: Retornar la longitud intentada
-```c
-return (lngdst + lngsrc);
+El while tiene dos condiciones que deben cumplirse simultáneamente:
+
+**Condición 1: `src[i] != '\0'`**
+
+No hemos llegado al final de src. Simple.
+
+**Condición 2: `(lngdst + i) < (dstsize - 1)`**
+
+Aquí está la clave del funcionamiento seguro. Vamos a desglosarlo:
+
+- `lngdst` es la posición donde empieza a escribir (el final actual de dst)
+- `i` es cuántos caracteres de src ha copiado hasta ahora
+- `lngdst + i` es la posición donde va a escribir el siguiente carácter
+- `dstsize - 1` es la última posición donde puede escribir un carácter normal
+
+### Por qué dstsize - 1
+
+El buffer tiene `dstsize` posiciones (índices 0 a dstsize-1). La última posición DEBE ser '\0'. Por tanto:
+
+```
+Posiciones disponibles para caracteres normales: 0 a (dstsize - 2)
+Posición reservada para '\0': (dstsize - 1)
 ```
 
-**Retorna SIEMPRE:**
-- Longitud de dst original + longitud completa de src
-- **Independientemente** de cuánto se copió realmente
+Ejemplo con dstsize = 10:
 
----
-
-## 📊 Ejemplos Completos
-
-### Ejemplo 1: Concatenación exitosa (todo cabe)
-
-```c
-char dst[20] = "Hola";        // lngdst = 4
-char src[] = " mundo";        // lngsrc = 6
-size_t result;
-
-result = ft_strlcat(dst, src, 20);
-
-// RESULTADO:
-// dst = "Hola mundo"
-// result = 10 (4 + 6)
-// result < 20 → ¡TODO CUPÓ!
+```
+Índices:    [0][1][2][3][4][5][6][7][8][9]
+Contenido:  [ ][ ][ ][ ][ ][ ][ ][ ][ ][\0]
+                                        ^
+                                        Siempre '\0'
 ```
 
-### Ejemplo 2: Truncamiento (no todo cabe)
+Solo puede escribir caracteres normales en las posiciones 0 a 8. La posición 9 es obligatoriamente '\0'.
+
+Por eso la condición es `< (dstsize - 1)`:
+- Si escribo en posición 8, puedo continuar (8 < 9)
+- Si intento escribir en posición 9, se detiene (9 NO es < 9)
+
+### Ejemplo paso a paso
 
 ```c
-char dst[10] = "Hola";        // lngdst = 4
-char src[] = " mundo!";       // lngsrc = 7
-size_t result;
-
-result = ft_strlcat(dst, src, 10);
-
-// RESULTADO:
-// dst = "Hola mun\0"   (solo copió 4 chars de src + '\0')
-// result = 11 (4 + 7)
-// result >= 10 → ¡SE TRUNCÓ!
+char dst[10] = "Hola";  // lngdst = 4, dstsize = 10
+char src[] = " mundo!"; // lngsrc = 7
 ```
 
-### Ejemplo 3: Buffer inválido
-
-```c
-char dst[5] = "Hola mundo";  // ¡Mal! dst dice tener más de 5
-char src[] = "extra";         // lngsrc = 5
-size_t result;
-
-result = ft_strlcat(dst, src, 5);
-
-// RESULTADO:
-// dst = NO SE MODIFICA
-// result = 10 (5 + 5)
-// Detecta que algo está mal
+Estado inicial:
+```
+dst: [H][o][l][a][\0][ ][ ][ ][ ][ ]
+      0  1  2  3  4   5  6  7  8  9
 ```
 
----
+Proceso de copia:
 
-## ⚠️ Diferencias con strcat
+```
+i=0: lngdst + i = 4 + 0 = 4
+     4 < 9 (dstsize-1) → TRUE
+     Copia src[0]=' ' en dst[4]
+     dst: [H][o][l][a][ ][\0][ ][ ][ ][ ]
 
-| Aspecto | strcat | ft_strlcat |
-|---------|--------|------------|
-| **Seguridad** | Insegura, puede desbordarse | Segura, respeta límites |
-| **Parámetros** | Solo dst y src | dst, src y dstsize |
-| **Retorno** | Puntero a dst | Longitud total intentada |
-| **Detecta truncamiento** | No | Sí (result >= dstsize) |
-| **Siempre añade '\0'** | Sí | Sí |
+i=1: lngdst + i = 4 + 1 = 5
+     5 < 9 → TRUE
+     Copia src[1]='m' en dst[5]
+     dst: [H][o][l][a][ ][m][\0][ ][ ][ ]
 
----
+i=2: 4 + 2 = 6 < 9 → TRUE, copia 'u'
+i=3: 4 + 3 = 7 < 9 → TRUE, copia 'n'
+i=4: 4 + 4 = 8 < 9 → TRUE, copia 'd'
 
-## 🧠 Lógica Interna Resumida
+i=5: lngdst + i = 4 + 5 = 9
+     9 < 9 → FALSE
+     STOP: no copia 'o' ni '!'
+```
 
-1. **Mide** las longitudes de dst y src
-2. **Verifica** que dst no esté ya lleno (lngdst < dstsize)
-3. **Copia** caracteres de src a dst hasta:
-   - Terminar src, O
-   - Quedarse sin espacio (dstsize - 1)
-4. **Añade** '\0' al final de dst
-5. **Retorna** lngdst + lngsrc (lo que "quiso" crear)
+Estado final antes de añadir '\0':
+```
+dst: [H][o][l][a][ ][m][u][n][d][ ]
+      0  1  2  3  4  5  6  7  8  9
+                                i=5 (no copió)
+```
 
----
+Luego añade '\0':
+```c
+dst[lngdst + i] = '\0';  // dst[4 + 5] = dst[9] = '\0'
+```
 
-## 🎓 ¿Por qué esta función es así?
+Resultado final:
+```
+dst: [H][o][l][a][ ][m][u][n][d][\0]
+      0  1  2  3  4  5  6  7  8  9
+```
 
-### Filosofía de diseño:
-
-1. **Seguridad primero**: Nunca desborda el buffer
-2. **Información útil**: El retorno permite detectar problemas
-3. **Consistencia**: Siempre termina dst con '\0'
-4. **Simplicidad**: Una sola función para concatenar con seguridad
-
-### La clave está en el retorno:
+## Por qué el retorno es diferente de lo copiado
 
 ```c
-size_t needed = ft_strlcat(dst, src, size);
+return (lngdst + lngsrc);  // Retorna 4 + 7 = 11
+```
 
-if (needed < size) {
-    // ✅ Todo bien, concatenación completa
-} else {
-    // ❌ Se truncó, necesitábamos un buffer de tamaño 'needed + 1'
-    printf("Necesitabas al menos %zu bytes\n", needed + 1);
+En el ejemplo anterior:
+- Copió solo 5 caracteres de src (espacio, m, u, n, d)
+- Pero retorna 11 (que sería la longitud si hubiera copiado todo)
+
+Esto permite detectar truncamiento:
+
+```c
+size_t result = ft_strlcat(dst, src, 10);
+
+if (result >= 10) {
+    // Se truncó: result=11, dstsize=10
+    // Necesitarías un buffer de al menos 12 bytes (11 + '\0')
 }
 ```
 
----
+## Resumen del funcionamiento
 
-## 💡 Casos de Uso Comunes
+1. Calcula longitudes de dst y src
+2. Si dst ya está lleno o el buffer es inválido, retorna sin copiar
+3. Copia caracteres de src a dst uno por uno
+4. Se detiene cuando:
+   - Termina src, O
+   - La siguiente posición sería dstsize-1 (reservada para '\0')
+5. Coloca '\0' donde se detuvo
+6. Retorna la longitud total que hubiera tenido (dst_inicial + src completo)
 
-### 1. Construir rutas de archivos
-```c
-char path[256] = "/home/user";
-ft_strlcat(path, "/documents", 256);
-ft_strlcat(path, "/file.txt", 256);
-// path = "/home/user/documents/file.txt"
-```
-
-### 2. Crear mensajes
-```c
-char msg[100] = "Error: ";
-ft_strlcat(msg, error_type, 100);
-ft_strlcat(msg, " en línea ", 100);
-ft_strlcat(msg, line_number, 100);
-```
-
-### 3. Validar espacio necesario
-```c
-char buffer[50];
-strcpy(buffer, "Inicio");
-
-if (ft_strlcat(buffer, largo_string, 50) >= 50) {
-    printf("Buffer demasiado pequeño\n");
-}
-```
-
----
-
-## 🐛 Errores Comunes
-
-### Error 1: Confundir dstsize con espacio disponible
-```c
-❌ ft_strlcat(dst, src, strlen(dst));  // ¡Mal! No hay espacio para src
-✅ ft_strlcat(dst, src, sizeof(dst));  // Bien, tamaño total del buffer
-```
-
-### Error 2: No verificar el retorno
-```c
-❌ ft_strlcat(dst, src, size);  // Ignora posible truncamiento
-✅ if (ft_strlcat(dst, src, size) >= size) {
-    // Manejar truncamiento
-}
-```
-
-### Error 3: Usar con buffers no inicializados
-```c
-❌ char dst[50];
-   ft_strlcat(dst, "texto", 50);  // dst no tiene '\0' inicial
-
-✅ char dst[50] = "";  // o dst[0] = '\0'
-   ft_strlcat(dst, "texto", 50);
-```
-
----
-
-## ✅ Checklist de Comprensión
-
-- [ ] Entiendo que dstsize es el tamaño TOTAL del buffer
-- [ ] Sé que el retorno es lngdst + lngsrc (no lo que copió)
-- [ ] Puedo detectar truncamiento comparando retorno con dstsize
-- [ ] Comprendo por qué se usa `dstsize - 1` en el while
-- [ ] Sé que dst siempre quedará con '\0' al final
-- [ ] Entiendo el caso especial cuando lngdst >= dstsize
-
----
-
-## 🔗 Recursos Adicionales
-
-- Man page: `man strlcat` (en sistemas BSD)
-- [OpenBSD strlcat](https://man.openbsd.org/strlcat.3)
-- Norminette 42: Estilo de código de 42
+El diseño garantiza que:
+- Nunca sobrepasa dstsize
+- dst siempre termina en '\0'
+- El llamador puede saber si hubo truncamiento
