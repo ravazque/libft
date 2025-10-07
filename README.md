@@ -41,13 +41,13 @@ The project is divided into three main parts:
 - `ft_strncmp` - Compare strings up to n characters
 - `ft_strlcpy` - Copy string with size limit
 
-  <details>
+<details>
   <summary><code>ft_strlcat</code> - Concatenate strings with size limit</summary>
+
+  - [Explanation in English](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_en.md)
+  - [Explicación en Español](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_es.md)
   
-  - [English](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_en.md)
-  - [Español](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_es.md)
-  
-  </details>
+</details>
 
 - `ft_strnstr` - Locate substring in string
 
