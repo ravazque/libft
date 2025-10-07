@@ -189,4 +189,3 @@ The design guarantees that:
 - Never exceeds dstsize
 - dst always ends with '\0'
 - The caller can know if truncation occurred
-- 
