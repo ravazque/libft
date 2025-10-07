@@ -1,3 +1,4 @@
+
 # ft_strlcat - Guía de Funcionamiento
 
 ## Prototipo

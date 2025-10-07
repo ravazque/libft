@@ -40,7 +40,15 @@ The project is divided into three main parts:
 - `ft_strrchr` - Locate character in string (reverse)
 - `ft_strncmp` - Compare strings up to n characters
 - `ft_strlcpy` - Copy string with size limit
-- `ft_strlcat` - Concatenate strings with size limit
+
+  <details>
+  <summary><code>ft_strlcat</code> - Concatenate strings with size limit</summary>
+  
+  - [English](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_en.md)
+  - [Español](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_es.md)
+  
+  </details>
+
 - `ft_strnstr` - Locate substring in string
 
 ### Memory functions
