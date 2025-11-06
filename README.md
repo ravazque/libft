@@ -1,7 +1,5 @@
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ayogun/42-project-badges/main/badges/libftm.png" alt="libftm badge">
-</p>
+# libft
 
 ## 📖 About
 
@@ -40,7 +38,7 @@ The project is divided into three main parts:
 - `ft_strrchr` - Locate character in string (reverse)
 - `ft_strncmp` - Compare strings up to n characters
 - `ft_strlcpy` - Copy string with size limit
-- `ft_strlcat` - Concatenate strings with size limit - | [Explanation_EN](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_en.md) | [Explanation_ES](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_es.md) |
+- `ft_strlcat` - Concatenate strings with size limit <!-- - | [Explanation_EN](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_en.md) | [Explanation_ES](https://github.com/ravazque/libft/blob/main/docs/ft_strlcat_es.md) | -->
 - `ft_strnstr` - Locate substring in string
 
 ### Memory functions
@@ -157,7 +155,7 @@ libft/
 
 ## 🔧 Technical Specifications
 
-- **Language**: C (C99 standard)
+- **Language**: C (C90 standard)
 - **Compiler**: cc with flags `-Wall -Wextra -Werror`
 - **Memory Management**: Manual memory management with malloc/free
 - **Library Type**: Static library (.a file)
